@@ -42,9 +42,25 @@ FILE *ptr;
 		fread((char*)&ext2_in, sizeof(struct ext2_inode), 1, ptr); 
 		return ext2_in;
 	}
-	
+
+	void get_time(ext2_inode ext2_in)
+	{
+		time_t a_rawtime = ext2_in.i_atime; 
+		char date[255]; // buffer to store time/date string 
+		struct tm* a_time_tm; 
+		a_time_tm = localtime(&a_rawtime); // convert from time_t to tm format 
+		strftime(date, 255, "%b %d %R", a_time_tm); 
+		printf("%s\n", date); 
+
+	}
+
+
 	int main(int argc, char *argv[])
 	{	
+
+		printf("File System %s\n", argv[1]);
+		printf("Path %s\n", argv[2]);
+
 		ptr = fopen(argv[1],"rb");  // r for read, b for binary
 
 		if (ptr == NULL)
@@ -173,20 +189,33 @@ FILE *ptr;
 			printf("----------------------------------------------------------------------------\n\n");	
 		}
 		
+		int inumber = 2; //root
+		char bbuf[block_size];
+		char name[255];
 		ext2_inode ext2_in;
-		ext2_in = get_inode(2,block_size,inode_size);
+		ext2_dir_entry_2 d;
+
+		ext2_in = get_inode(inumber,block_size,inode_size);
 		
-		for(int i = 0; i < 15; i++)
-		{
-			printf("%d\n", ext2_in.i_block[i]);
-		}
+		printf("%d\n", ext2_in.i_block[0]);
 		
-		time_t a_rawtime = ext2_in.i_atime; 
-		char date[255]; // buffer to store time/date string 
-		struct tm* a_time_tm; 
-		a_time_tm = localtime(&a_rawtime); // convert from time_t to tm format 
-		strftime(date, 255, "%b %d %R", a_time_tm); 
-		printf("%s\n", date); 
+		inumber = ext2_in.i_block[0];
+
+		fseek(ptr, inumber * block_size, SEEK_SET);
+		fread(bbuf, block_size, 1, ptr);
+		memcpy(&d,&bbuf[0],sizeof(d));
+
+		printf("%d\n",d.inode);
+		printf("%d\n",d.rec_len);
+		printf("%x\n",d.name_len);
+		printf("%x\n",d.file_type);
+		
+		memcpy(name,&d.name[0],d.name_len);
+		name[d.name_len+1] = '\0';
+
+		printf("%s\n",name);
+		//cout<<name;
+		//memcpy(name,d.name,d.name_len);
 		
 		
 		
