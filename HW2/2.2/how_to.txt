@@ -1,0 +1,6 @@
+tar source files and header
+tar cuf (prime login).tar *.c *.heade
+
+send email with attachment
+drews@ohio.edu
+subject cs4900 submition
